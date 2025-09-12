@@ -6,7 +6,7 @@ import { supabase } from "../../lib/supabaseClient";
 import dynamic from "next/dynamic";
 
 // Import dinámico de Leaflet (para que no falle en SSR)
-const Map = dynamic(() => import("../../components/Map"), { ssr: false });
+const Map = dynamic(() => import("../dashboard/components/MapView"), { ssr: false });
 
 export default function Dashboard() {
   const router = useRouter();

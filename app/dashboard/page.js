@@ -1,92 +1,66 @@
-"use client";
+'use client'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { supabase } from '../../lib/supabaseClient'
+import Navbar from '../../components/Navbar'
+import dynamic from 'next/dynamic'
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { supabase } from "../../lib/supabaseClient";
-import dynamic from "next/dynamic";
-
-// Import dinámico de Leaflet (para que no falle en SSR)
-const Map = dynamic(() => import("../dashboard/components/MapView"), { ssr: false });
+const MapView = dynamic(() => import('./components/MapView'), { ssr: false })
 
 export default function Dashboard() {
-  const router = useRouter();
-  const [profile, setProfile] = useState(null);
+  const router = useRouter()
+  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState(null)
 
   useEffect(() => {
-    const getProfile = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) {
-        router.push("/login");
-        return;
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        router.push('/login')
+      } else {
+        setUser(user)
       }
+      setLoading(false)
+    }
 
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", session.user.id)
-        .single();
-
-      setProfile(profileData);
-    };
-
-    getProfile();
-  }, [router]);
+    getUser()
+  }, [router])
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push("/login");
-  };
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
+
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <p>Cargando...</p>
+      </div>
+    )
+  }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <nav className="flex justify-between items-center p-4 bg-green-700 text-white">
-        <h1 className="text-xl font-bold">EntreNevados</h1>
-        <button
-          onClick={handleLogout}
-          className="bg-red-500 px-4 py-2 rounded hover:bg-red-600"
-        >
-          Cerrar sesión
-        </button>
-      </nav>
+    <>
+      <Navbar />
+      <div className="flex flex-col md:flex-row h-[calc(100vh-72px)]">
+        <aside className="md:w-1/3 p-6 overflow-y-auto bg-gray-50">
+          <h2 className="text-2xl font-bold mb-4">
+            Bienvenido, {user?.email}
+          </h2>
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 mb-6"
+          >
+            Cerrar Sesión
+          </button>
 
-      <main className="p-6">
-        <h2 className="text-2xl font-bold text-green-800">
-          Bienvenido {profile?.full_name || "Explorador"}
-        </h2>
-        <p className="text-gray-600 mb-6">
-          Aquí encontrarás los planes disponibles y su ubicación en el mapa.
-        </p>
-
-        {/* Aquí puedes mostrar cards de planes */}
-        <div className="grid md:grid-cols-3 gap-6 mb-6">
-          <div className="bg-white shadow-md p-4 rounded-lg">
-            <h3 className="font-bold text-lg">Senderismo</h3>
-            <p className="text-sm text-gray-600">
-              Explora rutas increíbles alrededor de los nevados.
-            </p>
-          </div>
-          <div className="bg-white shadow-md p-4 rounded-lg">
-            <h3 className="font-bold text-lg">Ciclismo</h3>
-            <p className="text-sm text-gray-600">
-              Vive la experiencia de recorrer paisajes únicos en bicicleta.
-            </p>
-          </div>
-          <div className="bg-white shadow-md p-4 rounded-lg">
-            <h3 className="font-bold text-lg">Cultura</h3>
-            <p className="text-sm text-gray-600">
-              Descubre la riqueza cultural y gastronómica de la región.
-            </p>
-          </div>
-        </div>
-
-        {/* Mapa con Leaflet */}
-        <div className="h-96">
-          <Map />
-        </div>
-      </main>
-    </div>
-  );
+          <h3 className="text-xl font-semibold mb-2">Tus Planes</h3>
+          <p className="text-gray-500">Aquí podrás ver tus planes guardados.</p>
+        </aside>
+        <main className="flex-1">
+          <MapView />
+        </main>
+      </div>
+    </>
+  )
 }

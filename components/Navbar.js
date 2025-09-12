@@ -14,7 +14,7 @@ export default function Navbar({ user }) {
     <nav className="flex items-center justify-between px-6 py-4 bg-white shadow">
       {/* Logo */}
       <div className="flex items-center space-x-2">
-        <img src="/images/logo.png" alt="logo" className="h-8" />
+        <img src="./images/entrenevados.png" alt="logo" className="h-8" />
         <span className="font-bold text-green-700">EntreNevados</span>
       </div>
 

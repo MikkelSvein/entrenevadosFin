@@ -1,30 +1,50 @@
-import Link from 'next/link'
-import Image from 'next/image'
+'use client'
+import { useRouter } from 'next/navigation'
+import { supabase } from '../lib/supabaseClient'
 
-export default function Navbar() {
+export default function Navbar({ user }) {
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
+
   return (
-    <header className="bg-white/90 backdrop-blur sticky top-0 z-30">
-      <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link href="/">
-            {/* Imagen en vez del texto */}
-            <Image
-              src="/images/entrenevados.png"
-              alt="Logo EntreNevados"
-              width={200}
-              height={100}
-              className="object-contain"
-              priority
-            />
-          </Link>
-        </div>
-        <nav className="flex items-center gap-6">
-          <Link href="/">Inicio</Link>
-          <Link href="#">Categorías</Link>
-          <Link href="/login" className="text-gray-700">Ingresar</Link>
-          <Link href="/login" className="px-4 py-2 bg-amber-400 text-white rounded-lg">Registrarse</Link>
-        </nav>
+    <nav className="flex items-center justify-between px-6 py-4 bg-white shadow">
+      {/* Logo */}
+      <div className="flex items-center space-x-2">
+        <img src="/images/logo.png" alt="logo" className="h-8" />
+        <span className="font-bold text-green-700">EntreNevados</span>
       </div>
-    </header>
+
+      {/* Links / acciones */}
+      <div className="flex items-center space-x-4">
+        <a href="/" className="hover:text-green-600">Inicio</a>
+        <a href="/categorias" className="hover:text-green-600">Categorías</a>
+
+        {!user ? (
+          <>
+            <a href="/login" className="hover:text-green-600">Ingresar</a>
+            <a
+              href="/login"
+              className="px-4 py-2 bg-yellow-400 text-white rounded hover:bg-yellow-500"
+            >
+              Registrarse
+            </a>
+          </>
+        ) : (
+          <div className="flex items-center space-x-3">
+            <span className="text-gray-700">{user.email}</span>
+            <button
+              onClick={handleLogout}
+              className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+            >
+              Cerrar sesión
+            </button>
+          </div>
+        )}
+      </div>
+    </nav>
   )
 }

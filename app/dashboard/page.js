@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabaseClient'
 import Navbar from '../../components/Navbar'
 import dynamic from 'next/dynamic'
+import Plans from './components/Plans'
 
 const MapView = dynamic(() => import('./components/MapView'), { ssr: false })
 
@@ -26,11 +27,6 @@ export default function Dashboard() {
     getUser()
   }, [router])
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push('/login')
-  }
-
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -41,22 +37,15 @@ export default function Dashboard() {
 
   return (
     <>
-      <Navbar />
-      <div className="flex flex-col md:flex-row h-[calc(100vh-72px)]">
-        <aside className="md:w-1/3 p-6 overflow-y-auto bg-gray-50">
-          <h2 className="text-2xl font-bold mb-4">
-            Bienvenido, {user?.email}
-          </h2>
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 mb-6"
-          >
-            Cerrar Sesión
-          </button>
-
-          <h3 className="text-xl font-semibold mb-2">Tus Planes</h3>
-          <p className="text-gray-500">Aquí podrás ver tus planes guardados.</p>
+      <Navbar user={user} />
+      <div className="flex h-[calc(100vh-72px)]">
+        {/* Columna izquierda: planes */}
+        <aside className="w-1/3 p-6 overflow-y-auto bg-gray-50">
+          <h2 className="text-xl font-bold mb-4">Tus Planes</h2>
+          <Plans />
         </aside>
+
+        {/* Columna derecha: mapa */}
         <main className="flex-1">
           <MapView />
         </main>

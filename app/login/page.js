@@ -1,22 +1,22 @@
 "use client";
-import { useState } from "react";
-import { supabase } from '../../lib/supabaseClient';
 
-export default function LoginRegister() {
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "../../lib/supabaseClient";
+
+export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [isLogin, setIsLogin] = useState(true);
 
-  // --- LOGIN ---
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -24,100 +24,49 @@ export default function LoginRegister() {
     if (error) {
       setError(error.message);
     } else {
-      window.location.href = "/dashboard";
+      router.push("/dashboard");
     }
-    setLoading(false);
-  };
 
-  // --- REGISTRO ---
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-
-    if (error) {
-      setError(error.message);
-    } else {
-      const user = data.user;
-
-      // Insertar perfil en la tabla profiles
-      if (user) {
-        await supabase.from("profiles").insert([
-          {
-            id: user.id,
-            full_name: fullName || "Nuevo Usuario",
-          },
-        ]);
-      }
-
-      alert("Cuenta creada. Revisa tu correo para confirmar.");
-    }
     setLoading(false);
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <form
-        onSubmit={isLogin ? handleLogin : handleRegister}
-        className="bg-white p-6 rounded-lg shadow-md w-80"
-      >
-        <h2 className="text-2xl font-bold mb-4">
-          {isLogin ? "Iniciar Sesión" : "Registrarse"}
-        </h2>
-
-        {error && <p className="text-red-500 mb-2">{error}</p>}
-
-        {!isLogin && (
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-green-100 to-green-200">
+      <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
+        <h1 className="text-2xl font-bold text-center text-green-800 mb-6">
+          Inicia Sesión
+        </h1>
+        <form onSubmit={handleLogin} className="space-y-4">
           <input
-            type="text"
-            placeholder="Nombre completo"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            className="w-full p-2 border rounded mb-3"
-            required
+            type="email"
+            placeholder="Correo electrónico"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
           />
-        )}
-
-        <input
-          type="email"
-          placeholder="Correo"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full p-2 border rounded mb-3"
-          required
-        />
-        <input
-          type="password"
-          placeholder="Contraseña"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full p-2 border rounded mb-3"
-          required
-        />
-
-        <button
-          type="submit"
-          className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
-          disabled={loading}
-        >
-          {loading ? "Procesando..." : isLogin ? "Entrar" : "Registrarse"}
-        </button>
-
-        <p className="text-sm mt-3 text-center">
-          {isLogin ? "¿No tienes cuenta?" : "¿Ya tienes cuenta?"}{" "}
-          <span
-            className="text-blue-600 cursor-pointer"
-            onClick={() => setIsLogin(!isLogin)}
+          <input
+            type="password"
+            placeholder="Contraseña"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
+          />
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition"
           >
-            {isLogin ? "Regístrate" : "Inicia sesión"}
-          </span>
+            {loading ? "Ingresando..." : "Entrar"}
+          </button>
+        </form>
+        <p className="text-center mt-4 text-sm text-gray-600">
+          ¿No tienes cuenta?{" "}
+          <a href="/register" className="text-green-700 font-semibold">
+            Regístrate
+          </a>
         </p>
-      </form>
+      </div>
     </div>
   );
 }

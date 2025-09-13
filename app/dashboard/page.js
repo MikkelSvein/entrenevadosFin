@@ -1,56 +1,57 @@
-'use client'
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { supabase } from '../../lib/supabaseClient'
-import dynamic from 'next/dynamic'
+"use client";
+import { useEffect, useState } from "react";
+import { supabase } from "../../lib/supabaseClient";
+import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 
-const MapView = dynamic(() => import('./components/MapView'), { ssr: false })
-const Plans = dynamic(() => import('./components/PlansList'), { ssr: false })
+const Mapa = dynamic(() => import("./components/MapView"), { ssr: false });
 
 export default function Dashboard() {
-  const router = useRouter()
-  const [user, setUser] = useState(null)
+  const [session, setSession] = useState(null);
+  const router = useRouter();
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data } = await supabase.auth.getUser()
-      if (data?.user) {
-        setUser(data.user)
+    const getSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) {
+        router.push("/login");
       } else {
-        router.push('/login')
+        setSession(data.session);
       }
-    }
-    getUser()
-  }, [router])
+    };
+    getSession();
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push('/')
-  }
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        router.push("/login");
+      }
+      setSession(session);
+    });
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, [router]);
 
   return (
-    <div className="flex h-screen">
-      {/* Sidebar con planes */}
-      <div className="w-1/3 p-4 bg-gray-50 overflow-y-auto">
-        <h2 className="font-bold text-lg mb-4">
-          Bienvenido, {user?.email}
-        </h2>
-        {/* ✅ Botón con el mismo estilo que el resto */}
-        <button
-          onClick={handleLogout}
-          className="w-full px-4 py-2 bg-amber-400 text-white rounded-lg hover:bg-amber-500 transition"
-        >
-          Cerrar Sesión
-        </button>
+    <div className="container-fluid">
+      <div className="row">
+        {/* Sidebar */}
+        <div className="col-md-4 p-3">
+          {session && (
+            <>
+              <h5 className="fw-bold">Bienvenido, {session.user.email}</h5>
+              <h6 className="mt-4">Tus Planes</h6>
+              {/* Aquí van los cards de planes */}
+            </>
+          )}
+        </div>
 
-        <h3 className="font-semibold mt-6 mb-2">Tus Planes</h3>
-        <Plans />
-      </div>
-
-      {/* Mapa */}
-      <div className="flex-1">
-        <MapView />
+        {/* Mapa */}
+        <div className="col-md-8">
+          <Mapa />
+        </div>
       </div>
     </div>
-  )
+  );
 }

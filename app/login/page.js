@@ -23,6 +23,7 @@ export default function LoginPage() {
     checkSession()
   }, [router])
 
+  
   const handleLogin = async (e) => {
     e.preventDefault()
     setError("")

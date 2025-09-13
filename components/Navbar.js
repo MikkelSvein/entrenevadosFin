@@ -83,7 +83,7 @@ export default function Navbar() {
               <span className="text-sm text-gray-700">{sessionUser.email}</span>
               <button
                 onClick={handleLogout}
-                className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                className="mt-3 w-full bg-amber-400 text-white py-2 rounded hover:bg-amber-500"
               >
                 Cerrar sesión
               </button>

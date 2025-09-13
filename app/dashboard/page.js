@@ -1,57 +1,56 @@
-"use client";
-import { useEffect, useState } from "react";
-import { supabase } from "../../lib/supabaseClient";
-import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
+import React from "react";
 
-const Mapa = dynamic(() => import("./components/MapView"), { ssr: false });
-
-export default function Dashboard() {
-  const [session, setSession] = useState(null);
-  const router = useRouter();
-
-  useEffect(() => {
-    const getSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (!data.session) {
-        router.push("/login");
-      } else {
-        setSession(data.session);
-      }
-    };
-    getSession();
-
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        router.push("/login");
-      }
-      setSession(session);
-    });
-
-    return () => {
-      listener.subscription.unsubscribe();
-    };
-  }, [router]);
-
+function Dashboard({ userEmail }) {
   return (
     <div className="container-fluid">
       <div className="row">
         {/* Sidebar */}
-        <div className="col-md-4 p-3">
-          {session && (
-            <>
-              <h5 className="fw-bold">Bienvenido, {session.user.email}</h5>
-              <h6 className="mt-4">Tus Planes</h6>
-              {/* Aquí van los cards de planes */}
-            </>
-          )}
+        <div className="col-md-3 col-lg-2 bg-light p-3">
+          <h5 className="fw-bold">Bienvenido, {userEmail}</h5>
+          <hr />
+          <h6 className="fw-bold">Tus Planes</h6>
+
+          {/* Plan de ejemplo */}
+          <div className="card mb-3 shadow-sm">
+            <img
+              src="/aventura.jpg"
+              className="card-img-top"
+              alt="Turismo de Aventura"
+            />
+            <div className="card-body">
+              <h5 className="card-title">Turismo de Aventura</h5>
+              <p className="card-text">Escalada, rafting y senderismo</p>
+              <button className="btn btn-warning w-100 fw-bold">
+                Ver en mapa
+              </button>
+            </div>
+          </div>
+
+          <div className="card mb-3 shadow-sm">
+            <img
+              src="/naturaleza.jpg"
+              className="card-img-top"
+              alt="Turismo de Naturaleza"
+            />
+            <div className="card-body">
+              <h5 className="card-title">Turismo de Naturaleza</h5>
+              <p className="card-text">
+                Avistamiento de aves y senderismo ecológico
+              </p>
+              <button className="btn btn-warning w-100 fw-bold">
+                Ver en mapa
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* Mapa */}
-        <div className="col-md-8">
-          <Mapa />
+        {/* Contenido principal */}
+        <div className="col-md-9 col-lg-10 p-0">
+          <div id="map" style={{ height: "100vh", width: "100%" }}></div>
         </div>
       </div>
     </div>
   );
 }
+
+export default Dashboard;

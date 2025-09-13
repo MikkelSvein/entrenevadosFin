@@ -1,56 +1,55 @@
-import React from "react";
+'use client'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { supabase } from '../../lib/supabaseClient'
+import dynamic from 'next/dynamic'
 
-function Dashboard({ userEmail }) {
+// ✅ Evita error de window is not defined cargando estos solo en cliente
+const MapView = dynamic(() => import('./components/MapView'), { ssr: false })
+const Plans = dynamic(() => import('./components/PlansList'), { ssr: false })
+
+export default function Dashboard() {
+  const router = useRouter()
+  const [user, setUser] = useState(null)
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data } = await supabase.auth.getUser()
+      if (data?.user) {
+        setUser(data.user)
+      } else {
+        router.push('/login')
+      }
+    }
+    getUser()
+  }, [router])
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push('/')
+  }
+
   return (
-    <div className="container-fluid">
-      <div className="row">
-        {/* Sidebar */}
-        <div className="col-md-3 col-lg-2 bg-light p-3">
-          <h5 className="fw-bold">Bienvenido, {userEmail}</h5>
-          <hr />
-          <h6 className="fw-bold">Tus Planes</h6>
+    <div className="flex h-screen">
+      {/* Sidebar con planes */}
+      <div className="w-1/3 p-4 bg-gray-50 overflow-y-auto">
+        <h2 className="font-bold text-lg mb-4">
+          Bienvenido, {user?.email}
+        </h2>
+        <button
+          onClick={handleLogout}
+          className="bg-red-500 text-white px-4 py-2 rounded mb-6"
+        >
+          Cerrar Sesión
+        </button>
+        <h3 className="font-semibold mb-2">Tus Planes</h3>
+        <Plans />
+      </div>
 
-          {/* Plan de ejemplo */}
-          <div className="card mb-3 shadow-sm">
-            <img
-              src="/aventura.jpg"
-              className="card-img-top"
-              alt="Turismo de Aventura"
-            />
-            <div className="card-body">
-              <h5 className="card-title">Turismo de Aventura</h5>
-              <p className="card-text">Escalada, rafting y senderismo</p>
-              <button className="btn btn-warning w-100 fw-bold">
-                Ver en mapa
-              </button>
-            </div>
-          </div>
-
-          <div className="card mb-3 shadow-sm">
-            <img
-              src="/naturaleza.jpg"
-              className="card-img-top"
-              alt="Turismo de Naturaleza"
-            />
-            <div className="card-body">
-              <h5 className="card-title">Turismo de Naturaleza</h5>
-              <p className="card-text">
-                Avistamiento de aves y senderismo ecológico
-              </p>
-              <button className="btn btn-warning w-100 fw-bold">
-                Ver en mapa
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Contenido principal */}
-        <div className="col-md-9 col-lg-10 p-0">
-          <div id="map" style={{ height: "100vh", width: "100%" }}></div>
-        </div>
+      {/* Mapa */}
+      <div className="flex-1">
+        <MapView />
       </div>
     </div>
-  );
+  )
 }
-
-export default Dashboard;

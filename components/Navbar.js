@@ -34,10 +34,10 @@ function Navbar({ userEmail, onLogout }) {
                 </li>
                 <li className="nav-item">
                   <button
-                    className="btn btn-warning fw-bold"
+                    className="btn btn-danger fw-bold"
                     onClick={onLogout}
                   >
-                    Cerrar Sesión
+                    Cerrar sesión
                   </button>
                 </li>
               </>

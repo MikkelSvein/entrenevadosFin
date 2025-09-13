@@ -1,83 +1,96 @@
+// components/Navbar.js
 "use client";
+
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import Image from "next/image";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabaseClient";
 
 export default function Navbar() {
-  const pathname = usePathname();
   const router = useRouter();
-  const [session, setSession] = useState(null);
+  const [sessionUser, setSessionUser] = useState(null);
 
   useEffect(() => {
-    const getSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      setSession(data.session);
-    };
-    getSession();
+    let mounted = true;
 
+    // Obtener sesión inicial
+    const getUser = async () => {
+      try {
+        const { data } = await supabase.auth.getUser();
+        if (mounted) setSessionUser(data.user ?? null);
+      } catch (err) {
+        console.error("getUser:", err);
+      }
+    };
+
+    getUser();
+
+    // Suscribirse a cambios de auth (login/logout) para mantener la UI sincronizada
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
+      if (!mounted) return;
+      setSessionUser(session?.user ?? null);
     });
 
     return () => {
-      listener.subscription.unsubscribe();
+      mounted = false;
+      listener?.subscription?.unsubscribe?.();
     };
   }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push("/");
+    // Después de cerrar sesión redirigimos
+    router.push("/login");
   };
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-      <div className="container-fluid">
-        <Link href="/" className="navbar-brand d-flex align-items-center">
-          <img src="./images/entrenevados.png" alt="EntreNevados" height="40" className="me-2" />
-          <span className="fw-bold text-brown">EntreNevados</span>
-        </Link>
-
-        <div className="collapse navbar-collapse justify-content-end">
-          <ul className="navbar-nav align-items-center">
-            <li className="nav-item">
-              <Link
-                href="/"
-                className={`nav-link fw-bold ${pathname === "/" ? "active" : ""}`}
-              >
-                Inicio
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link
-                href="/categorias"
-                className={`nav-link fw-bold ${pathname === "/categorias" ? "active" : ""}`}
-              >
-                Categorías
-              </Link>
-            </li>
-
-            {session ? (
-              <>
-                <li className="nav-item me-2">
-                  <span className="nav-link fw-bold">{session.user.email}</span>
-                </li>
-                <li className="nav-item">
-                  <button className="btn btn-warning fw-bold" onClick={handleLogout}>
-                    Cerrar sesión
-                  </button>
-                </li>
-              </>
-            ) : (
-              <li className="nav-item">
-                <Link href="/login" className="btn btn-warning fw-bold">
-                  Iniciar sesión
-                </Link>
-              </li>
-            )}
-          </ul>
+    <header className="bg-white/90 backdrop-blur sticky top-0 z-30">
+      <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/images/entrenevados.png"
+              alt="Logo EntreNevados"
+              width={200}
+              height={60}
+              className="object-contain"
+              priority
+            />
+          </Link>
         </div>
+
+        <nav className="flex items-center gap-6">
+          <Link href="/">Inicio</Link>
+          <Link href="#">Categorías</Link>
+
+          {/* Si no hay usuario, mostrar Ingresar / Registrarse */}
+          {!sessionUser ? (
+            <>
+              <Link href="/login" className="text-gray-700">
+                Ingresar
+              </Link>
+              <Link
+                href="/login"
+                className="px-4 py-2 bg-amber-400 text-white rounded-lg"
+              >
+                Registrarse
+              </Link>
+            </>
+          ) : (
+            // Si hay sesión, mostrar email y botón de logout
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-700">{sessionUser.email}</span>
+              <button
+                onClick={handleLogout}
+                className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+              >
+                Cerrar sesión
+              </button>
+            </div>
+          )}
+        </nav>
       </div>
-    </nav>
+    </header>
   );
 }

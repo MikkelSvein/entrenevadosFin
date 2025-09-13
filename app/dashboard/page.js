@@ -1,55 +1,60 @@
-'use client'
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { supabase } from '../../lib/supabaseClient'
-import dynamic from 'next/dynamic'
-
-// ✅ Evita error de window is not defined cargando estos solo en cliente
-const MapView = dynamic(() => import('./components/MapView'), { ssr: false })
-const Plans = dynamic(() => import('./components/PlansList'), { ssr: false })
+"use client";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "../../lib/supabaseClient";
+import Navbar from "../../components/Navbar";
 
 export default function Dashboard() {
-  const router = useRouter()
-  const [user, setUser] = useState(null)
+  const [session, setSession] = useState(null);
+  const router = useRouter();
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data } = await supabase.auth.getUser()
-      if (data?.user) {
-        setUser(data.user)
+    const getSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) {
+        router.push("/login");
       } else {
-        router.push('/login')
+        setSession(data.session);
       }
-    }
-    getUser()
-  }, [router])
+    };
+    getSession();
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push('/')
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        router.push("/login");
+      }
+      setSession(session);
+    });
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, [router]);
+
+  if (!session) {
+    return null; // evita parpadeo antes de redirigir
   }
 
   return (
-    <div className="flex h-screen">
-      {/* Sidebar con planes */}
-      <div className="w-1/3 p-4 bg-gray-50 overflow-y-auto">
-        <h2 className="font-bold text-lg mb-4">
-          Bienvenido, {user?.email}
-        </h2>
-        <button
-          onClick={handleLogout}
-          className="bg-red-500 text-white px-4 py-2 rounded mb-6"
-        >
-          Cerrar Sesión
-        </button>
-        <h3 className="font-semibold mb-2">Tus Planes</h3>
-        <Plans />
+    <>
+      <Navbar />
+      <div className="container mt-5">
+        <h1 className="text-center mb-4">Bienvenido al Dashboard</h1>
+        <p className="text-center">
+          Hola, <strong>{session.user.email}</strong>. ¡Has iniciado sesión correctamente!
+        </p>
+        <div className="mt-4 text-center">
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15932.215393698357!2d-75.4978!3d4.8143!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e38873d18c77f23%3A0xabc123456789!2sParque%20Los%20Nevados!5e0!3m2!1ses!2sco!4v1694471745791!5m2!1ses!2sco"
+            width="100%"
+            height="500"
+            style={{ border: 0 }}
+            allowFullScreen=""
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          ></iframe>
+        </div>
       </div>
-
-      {/* Mapa */}
-      <div className="flex-1">
-        <MapView />
-      </div>
-    </div>
-  )
+    </>
+  );
 }

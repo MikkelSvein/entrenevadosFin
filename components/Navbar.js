@@ -34,7 +34,7 @@ export default function Navbar() {
     <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
       <div className="container-fluid">
         <Link href="/" className="navbar-brand d-flex align-items-center">
-          <img src="/logo.png" alt="EntreNevados" height="40" className="me-2" />
+          <img src="./images/entrenevados.png" alt="EntreNevados" height="40" className="me-2" />
           <span className="fw-bold text-brown">EntreNevados</span>
         </Link>
 

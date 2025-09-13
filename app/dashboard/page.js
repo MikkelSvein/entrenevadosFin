@@ -1,9 +1,9 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabaseClient'
-import MapView from '@/components/MapView'
-import Plans from '@/components/Plans'
+import { supabase } from '../../lib/supabaseClient'
+import MapView from './components/MapView'
+import Plans from './components/PlansList'
 
 export default function Dashboard() {
   const router = useRouter()

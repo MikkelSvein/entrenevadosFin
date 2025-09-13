@@ -40,7 +40,7 @@ export default function LoginPage() {
         />
         <input
           type="password"
-          placeholder="Contraseña"
+          placeholder="Conraseña"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="w-full border p-2 mb-3 rounded"

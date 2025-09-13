@@ -1,10 +1,8 @@
 import Link from 'next/link'
-import Navbar from '../components/Navbar'
 
 export default function Home() {
   return (
     <>
-      <Navbar />
       <main className="min-h-screen bg-cover bg-center" style={{ backgroundImage: "url('./images/nevado.png')" }}>
         <div className="bg-black bg-opacity-40 min-h-screen flex flex-col justify-center items-center text-center text-white p-6">
           <h1 className="text-5xl md:text-7xl font-extrabold mb-4">Atrevete A La <span className="text-yellow-400">Aventura</span></h1>

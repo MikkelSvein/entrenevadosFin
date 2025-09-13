@@ -1,96 +1,77 @@
-// components/Navbar.js
-"use client";
+'use client'
+import { useAuth } from '../context/AuthContext'
+import { useLocale } from '../context/LocaleContext'
+import { useRouter } from 'next/navigation'
+import { FormattedMessage } from 'react-intl'
+import { supabase } from '../lib/supabaseClient'
+import Link from 'next/link'
 
-import Link from "next/link";
-import Image from "next/image";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { supabase } from "../lib/supabaseClient";
 
 export default function Navbar() {
-  const router = useRouter();
-  const [sessionUser, setSessionUser] = useState(null);
-
-  useEffect(() => {
-    let mounted = true;
-
-    // Obtener sesión inicial
-    const getUser = async () => {
-      try {
-        const { data } = await supabase.auth.getUser();
-        if (mounted) setSessionUser(data.user ?? null);
-      } catch (err) {
-        console.error("getUser:", err);
-      }
-    };
-
-    getUser();
-
-    // Suscribirse a cambios de auth (login/logout) para mantener la UI sincronizada
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!mounted) return;
-      setSessionUser(session?.user ?? null);
-    });
-
-    return () => {
-      mounted = false;
-      listener?.subscription?.unsubscribe?.();
-    };
-  }, []);
+  const { user, setUser } = useAuth()
+  const { locale, setLocale } = useLocale()
+  const router = useRouter()
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    // Después de cerrar sesión redirigimos
-    router.push("/login");
-  };
+    await supabase.auth.signOut()
+    setUser(null)
+    router.push('/login')
+  }
+
+  const handleCategoriasClick = () => {
+    if (typeof window !== 'undefined') {
+      const catSection = document.getElementById('categorias')
+      if (catSection) catSection.scrollIntoView({ behavior: 'smooth' })
+      else router.push('/#categorias')
+    }
+  }
+
+  const handleChangeLocale = (e) => setLocale(e.target.value)
 
   return (
-    <header className="bg-white/90 backdrop-blur sticky top-0 z-30">
-      <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center">
-            <Image
-              src="/images/entrenevados.png"
-              alt="Logo EntreNevados"
-              width={200}
-              height={60}
-              className="object-contain"
-              priority
-            />
-          </Link>
-        </div>
-
-        <nav className="flex items-center gap-6">
-          <Link href="/">Inicio</Link>
-          <Link href="#">Categorías</Link>
-
-          {/* Si no hay usuario, mostrar Ingresar / Registrarse */}
-          {!sessionUser ? (
-            <>
-              <Link href="/login" className="text-gray-700">
-                Ingresar
-              </Link>
-              <Link
-                href="/login"
-                className="px-4 py-2 bg-amber-400 text-white rounded-lg"
-              >
-                Registrarse
-              </Link>
-            </>
-          ) : (
-            // Si hay sesión, mostrar email y botón de logout
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-700">{sessionUser.email}</span>
-              <button
-                onClick={handleLogout}
-                className="mt-3 w-full bg-amber-400 text-white py-2 rounded hover:bg-amber-500"
-              >
-                Cerrar sesión
-              </button>
-            </div>
-          )}
-        </nav>
+    <nav className="flex items-center justify-between px-6 py-4 bg-white shadow">
+      <div className="flex items-center space-x-2">
+        <img src="/images/entrenevados.png" alt="logo" className="h-12 w-auto" />
       </div>
-    </header>
-  );
+      <div className="flex items-center space-x-4">
+        <a href="/" className="hover:text-green-600">
+          <FormattedMessage id="home" defaultMessage="Home" />
+        </a>
+...
+<button type="button" style={{ border:'none', background:'none', cursor:'pointer' }}>
+  <Link href="/dashboard/sites">
+    <a><FormattedMessage id="categories" defaultMessage="Categories" /></a>
+  </Link>
+</button>
+
+
+        <select value={locale} onChange={handleChangeLocale} className="border p-1 rounded">
+          <option value="es">ES</option>
+          <option value="en">EN</option>
+        </select>
+
+        {!user ? (
+          <>
+            <a href="/login" className="hover:text-green-600">
+              <FormattedMessage id="login" defaultMessage="Login" />
+            </a>
+            <a href="/login" className="px-4 py-2 bg-yellow-400 text-white rounded hover:bg-yellow-500">
+              <FormattedMessage id="register" defaultMessage="Register" />
+            </a>
+          </>
+        ) : (
+          <div className="flex items-center space-x-3">
+            <span className="text-gray-700">{user.email}</span>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="px-4 py-2 bg-yellow-400 text-white rounded hover:bg-yellow-500"
+            >
+              <FormattedMessage id="logout" defaultMessage="Logout" />
+            </button>
+          </div>
+        )}
+      </div>
+    </nav>
+  )
 }

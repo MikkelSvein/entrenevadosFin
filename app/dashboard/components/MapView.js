@@ -16,7 +16,6 @@ const markerIcon = new L.Icon({
   iconSize: [28, 28],
 })
 
-// Componente para crear y actualizar rutas
 function RoutingControl({ userPos, destination }) {
   const map = useMap()
   const routingControlRef = useRef(null)
@@ -51,7 +50,7 @@ export default function MapView({ selectedPlan }) {
   const [userPos, setUserPos] = useState(null)
 
   useEffect(() => {
-    if (navigator.geolocation) {
+    if (typeof window !== 'undefined' && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => setUserPos([pos.coords.latitude, pos.coords.longitude]),
         () => alert('No se pudo obtener la ubicación')
@@ -59,7 +58,7 @@ export default function MapView({ selectedPlan }) {
     }
   }, [])
 
-  const center = userPos || [4.4389, -75.2322] // Centro predeterminado (Ibagué)
+  const center = userPos || [4.4389, -75.2322] // Centro predeterminado
 
   return (
     <MapContainer center={center} zoom={11} style={{ height: '500px', width: '100%' }}>

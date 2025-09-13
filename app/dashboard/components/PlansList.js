@@ -7,7 +7,6 @@ const plansData = [
   { id: 3, name: 'Parque Natural Regional', type: 'Naturaleza', coords: [4.55, -75.28], image: '/images/naturaleza.jpg' },
   { id: 4, name: 'Fiestas Tradicionales', type: 'Cultural', coords: [4.45, -75.24], image: '/images/cultural.jpg' },
   { id: 5, name: 'Rafting Río Combeima', type: 'Aventura', coords: [4.60, -75.3], image: '/images/aventura.jpg' },
-  // agrega más actividades con su imagen correspondiente
 ]
 
 const types = [...new Set(plansData.map(p => p.type))]
@@ -42,7 +41,7 @@ export default function PlansList({ onSelect }) {
             tabIndex={0}
           >
             <img
-              src={plan.image || '/images/default.jpg'} // imagen por defecto si no hay asignada
+              src={plan.image || '/images/default.jpg'}
               alt={`${plan.type} imagen`}
               className="w-16 h-12 object-cover rounded"
             />

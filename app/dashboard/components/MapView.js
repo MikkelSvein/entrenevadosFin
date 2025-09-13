@@ -1,50 +1,80 @@
 'use client'
+import { useState, useEffect, useRef } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
-import { useEffect, useState } from 'react'
-import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
+import 'leaflet-routing-machine/dist/leaflet-routing-machine.css'
+import 'leaflet-routing-machine'
 
 const userIcon = new L.Icon({
   iconUrl: '/images/user-marker.png',
-  iconSize: [32,32],
+  iconSize: [32, 32],
 })
 
-const MarkerIcon = new L.Icon({
+const markerIcon = new L.Icon({
   iconUrl: '/images/marker.png',
-  iconSize: [28,28],
+  iconSize: [28, 28],
 })
 
-function FocusHandler(){
+// Componente para crear y actualizar rutas
+function RoutingControl({ userPos, destination }) {
   const map = useMap()
-  useEffect(()=>{
-    const h = (e) => {
-      const coords = e.detail
-      if(coords && Array.isArray(coords)) map.flyTo(coords, 12)
+  const routingControlRef = useRef(null)
+
+  useEffect(() => {
+    if (!userPos || !destination) return
+
+    if (routingControlRef.current) {
+      map.removeControl(routingControlRef.current)
     }
-    window.addEventListener('focusOn', h)
-    return ()=> window.removeEventListener('focusOn', h)
-  },[map])
+
+    routingControlRef.current = L.Routing.control({
+      waypoints: [
+        L.latLng(userPos[0], userPos[1]),
+        L.latLng(destination.coords[0], destination.coords[1]),
+      ],
+      routeWhileDragging: true,
+      show: true,
+      addWaypoints: false,
+      draggableWaypoints: true,
+      fitSelectedRoutes: true,
+      showAlternatives: false,
+    }).addTo(map)
+
+    return () => map.removeControl(routingControlRef.current)
+  }, [map, userPos, destination])
+
   return null
 }
 
-export default function MapView(){
-  const [pos, setPos] = useState([4.4389, -75.2322])
-  useEffect(()=>{
-    if(navigator.geolocation){
-      navigator.geolocation.getCurrentPosition((p)=> setPos([p.coords.latitude, p.coords.longitude]), ()=>{}, {timeout:5000})
+export default function MapView({ selectedPlan }) {
+  const [userPos, setUserPos] = useState(null)
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setUserPos([pos.coords.latitude, pos.coords.longitude]),
+        () => alert('No se pudo obtener la ubicación')
+      )
     }
-  },[])
-  const points = [
-    { id:1, name:'Nevado del Tolima', coords:[4.6584,-75.2976] },
-    { id:2, name:'Ibagué Centro', coords:[4.4389,-75.2322] },
-    { id:3, name:'Parque Natural', coords:[4.55,-75.28] },
-  ]
+  }, [])
+
+  const center = userPos || [4.4389, -75.2322] // Centro predeterminado (Ibagué)
+
   return (
-    <MapContainer center={pos} zoom={9} style={{height:'100%', width:'100%'}}>
-      <FocusHandler />
-      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap contributors"/>
-      <Marker position={pos} icon={userIcon}><Popup>Estás aquí</Popup></Marker>
-      {points.map(pt => (<Marker key={pt.id} position={pt.coords} icon={MarkerIcon}><Popup>{pt.name}</Popup></Marker>))}
+    <MapContainer center={center} zoom={11} style={{ height: '500px', width: '100%' }}>
+      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+      {userPos && <Marker position={userPos} icon={userIcon}><Popup>Tu ubicación</Popup></Marker>}
+
+      {selectedPlan && (
+        <>
+          <Marker position={selectedPlan.coords} icon={markerIcon}>
+            <Popup>{selectedPlan.name}</Popup>
+          </Marker>
+          <RoutingControl userPos={userPos} destination={selectedPlan} />
+        </>
+      )}
     </MapContainer>
   )
 }

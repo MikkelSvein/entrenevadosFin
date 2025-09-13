@@ -15,7 +15,6 @@ export default function Navbar({ user }) {
       {/* Logo */}
       <div className="flex items-center space-x-2">
         <img
-          // Cambia h-12 por h-8, h-10, h-16, etc., para ajustar tamaño
           src="/images/entrenevados.png"
           alt="logo"
           className="h-12 w-auto"
@@ -42,7 +41,7 @@ export default function Navbar({ user }) {
             <span className="text-gray-700">{user.email}</span>
             <button
               onClick={handleLogout}
-              className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+              className="px-4 py-2 bg-yellow-400 text-white rounded hover:bg-yellow-500"
             >
               Cerrar sesión
             </button>

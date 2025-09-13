@@ -2,19 +2,17 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import Navbar from '../components/Navbar'
+import '../globals.css' // 👈 Importa tu CSS global AQUÍ
 
 export default function RootLayout({ children }) {
   const [user, setUser] = useState(null)
 
   useEffect(() => {
-    // Consultar usuario al cargar
     const fetchSession = async () => {
       const { data } = await supabase.auth.getUser()
       setUser(data.user)
     }
     fetchSession()
-
-    // Escuchar eventos de login/logout para actualizar el user
     const { data: listener } = supabase.auth.onAuthStateChange(() => fetchSession())
     return () => listener?.subscription.unsubscribe()
   }, [])

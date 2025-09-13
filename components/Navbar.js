@@ -34,7 +34,7 @@ export default function Navbar() {
     <nav className="navbar navbar-expand-lg navbar-light bg-white px-4 shadow-sm">
       <div className="container-fluid">
         <Link href="/" className="navbar-brand">
-          <img src="/logo.png" alt="EntreNevados" height="40" />
+          <img src="/images/entrenevados.png" alt="EntreNevados" height="40" />
         </Link>
 
         <div className="collapse navbar-collapse">

@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabaseClient'
 import dynamic from 'next/dynamic'
 
-// ✅ Evita error de window is not defined cargando estos solo en cliente
 const MapView = dynamic(() => import('./components/MapView'), { ssr: false })
 const Plans = dynamic(() => import('./components/PlansList'), { ssr: false })
 
@@ -36,13 +35,15 @@ export default function Dashboard() {
         <h2 className="font-bold text-lg mb-4">
           Bienvenido, {user?.email}
         </h2>
+        {/* ✅ Botón con el mismo estilo que el resto */}
         <button
           onClick={handleLogout}
-          className="bg-red-500 text-white px-4 py-2 rounded mb-6"
+          className="w-full px-4 py-2 bg-amber-400 text-white rounded-lg hover:bg-amber-500 transition"
         >
           Cerrar Sesión
         </button>
-        <h3 className="font-semibold mb-2">Tus Planes</h3>
+
+        <h3 className="font-semibold mt-6 mb-2">Tus Planes</h3>
         <Plans />
       </div>
 

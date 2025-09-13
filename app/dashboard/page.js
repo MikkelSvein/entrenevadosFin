@@ -2,8 +2,11 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabaseClient'
-import MapView from './components/MapView'
-import Plans from './components/PlansList'
+import dynamic from 'next/dynamic'
+
+// ✅ Evita error de window is not defined cargando estos solo en cliente
+const MapView = dynamic(() => import('./components/MapView'), { ssr: false })
+const Plans = dynamic(() => import('./components/PlansList'), { ssr: false })
 
 export default function Dashboard() {
   const router = useRouter()
